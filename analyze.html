@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice Navigation Assistant</title>
+  <style>
+    body { margin: 0; background: #000; color: #fff; font-family: Arial, sans-serif; text-align: center; }
+    h1 { margin: 20px 0; }
+    video { width: 70%; max-width: 700px; border-radius: 12px; margin: 20px auto; box-shadow: 0 0 20px rgba(0,255,0,0.4); }
+    #status { font-size: 18px; margin-top: 20px; color: #0f0; }
+  </style>
+</head>
+<body>
+  <h1>Live Navigation Assistant</h1>
+  <video autoplay muted playsinline id="videoStream"></video>
+  <div id="status">Initializing system...</div>
+
+  <script>
+    const video = document.getElementById("videoStream");
+    const statusDiv = document.getElementById("status");
+    let stream = null;
+
+    // ✅ Start Camera Automatically
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        statusDiv.textContent = "Camera started. Listening for your command...";
+      } catch (err) {
+        statusDiv.textContent = "Camera access denied.";
+        speak("Unable to access the camera.");
+      }
+    }
+
+    // ✅ Speech Recognition Auto Start
+    function startVoiceRecognition() {
+      if (!("webkitSpeechRecognition" in window)) {
+        speak("Speech recognition not supported in this browser.");
+        return;
+      }
+
+      const recognition = new webkitSpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.continuous = true; // always listen
+
+      recognition.onresult = function(event) {
+        const command = event.results[event.results.length - 1][0].transcript.toLowerCase();
+        statusDiv.textContent = "You said: " + command;
+        speak("You said " + command);
+        sendCommand(command);
+      };
+
+      recognition.onerror = function() {
+        statusDiv.textContent = "Voice recognition error.";
+        speak("Sorry, I couldn't hear you.");
+      };
+
+      recognition.onend = function() {
+        // Restart automatically
+        recognition.start();
+      };
+
+      recognition.start();
+      speak("Listening for your command.");
+    }
+
+    // ✅ Send Command + Camera Frame to Backend
+    async function sendCommand(command) {
+      if (!stream) {
+        speak("Camera not available.");
+        return;
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(async (blob) => {
+        const formData = new FormData();
+        formData.append("image", blob, "frame.jpg");
+        formData.append("command", command);
+
+        try {
+          const response = await fetch("http://127.0.0.1:5000/analyze", {
+            method: "POST",
+            body: formData
+          });
+
+          if (!response.ok) throw new Error("Server error");
+          const result = await response.json();
+
+          const description = result.description || "No description available.";
+          const directions = result.directions || result.spoken || "No navigation update.";
+
+          statusDiv.innerHTML = `
+            <strong>Description:</strong> ${description}<br/>
+            <strong>Directions:</strong> ${directions}
+          `;
+
+          speak(description + ". " + directions);
+        } catch (error) {
+          console.error("Error:", error);
+          speak("Error analyzing the scene.");
+        }
+      }, "image/jpeg");
+    }
+
+    // ✅ Speech Output (English + Kannada)
+function speak(text) {
+  // English output
+  const utterEn = new SpeechSynthesisUtterance(text);
+  utterEn.lang = "en-US";
+  window.speechSynthesis.speak(utterEn);
+
+  // Kannada output
+  const utterKn = new SpeechSynthesisUtterance(text);
+  utterKn.lang = "kn-IN";   // Kannada voice
+  window.speechSynthesis.speak(utterKn);
+}
+
+
+    // Auto-start on load
+    window.onload = () => {
+      startCamera();
+      startVoiceRecognition();
+    };
+  </script>
+</body>
+</html>

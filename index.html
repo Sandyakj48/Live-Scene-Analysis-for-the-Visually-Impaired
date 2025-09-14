@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scene Assist</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: white;
+      text-align: center;
+      overflow: hidden;
+    }
+    nav {
+      background: rgba(0,0,0,0.5);
+      padding: 10px;
+      display: flex;
+      justify-content: space-around;
+      position: relative;
+      z-index: 2;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .hero {
+      padding: 100px 20px;
+      position: relative;
+      z-index: 2;
+    }
+    h1 {
+      font-size: 3em;
+      margin-bottom: 10px;
+    }
+    .btn {
+      padding: 12px 24px;
+      background: hsl(78, 76%, 44%);
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      color: rgb(20, 19, 19);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    /* Background video style */
+    .video-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .video-background iframe {
+      width: 120vw;
+      height: 120vh;
+      position: absolute;
+      top: -10%;
+      left: -10%;
+      pointer-events: none; /* Prevent clicking on the video */
+    }
+  </style>
+</head>
+<body>
+
+  <!-- YouTube Video Background -->
+  <div class="video-background">
+    <iframe src="https://www.youtube.com/embed/Hd6Ndz6QpRI?autoplay=1&mute=1&loop=1&playlist=Hd6Ndz6QpRI&controls=0&showinfo=0&modestbranding=1&autohide=1&rel=0"
+      frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+  </div>
+
+  <!-- Your original page content -->
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="analyze.html">Scene Analysis</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+
+  <div class="hero">
+    <h1>Scene Assist</h1>
+    <p>Empowering the visually impaired through AI and Google Glass</p>
+    <a class="btn" href="analyze.html">Start Analysis</a>
+  </div>
+
+</body>
+</html>
